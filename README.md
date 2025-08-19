@@ -141,11 +141,11 @@
 ### 💻 **Software Installation**
 ```bash
 # Clone the project
-git clone https://github.com/your-repo/VitalCare-Rural.git
+git clone https://github.com/Pusparaj99op/LogicLegions_HTH_2k25
 
 # Open in VS Code with PlatformIO
-cd VitalCare-Rural
-code VitalCare-Rural.code-workspace
+cd LogicLegions_HTH_2k25
+code VitalCare-Rural.code-workspace # Mene yaha Ek Worspace banaya hai For Easy Setup
 
 # Flash ESP32 modules
 pio run --target upload --environment esp32-main
@@ -267,15 +267,16 @@ We welcome contributions from the community! Whether you're a:
 ## 📞 Contact & Support
 
 ### 👥 **Development Team**
-- 🏫 **Institution**: SDCE Nagpur - Hack The Hardware 2025
-- 📧 **Contact**: [your-email@example.com]
-- 💬 **Discussion**: GitHub Issues and Discussions
+- 🏫 **Institution**: SDCE Nagpur - Hack The Hardware 2k25
+- 📖 ** team Members**: Pranay Gajbhiye, Vineet mandhankar, abhijit Dohe, Soham Pise 
+- 📧 **Contact**: [Pranaygajbhiye2020@gmail.com]
+- 💬 **Discussion**: We Will Soon Create Discussion
 
-### 🆘 **Getting Help**
+<!-- ### 🆘 **Getting Help**
 - 📖 Check the [Documentation](./documentation/)
-- 🐛 Report issues on [GitHub Issues](https://github.com/your-repo/issues)
-- 💭 Join discussions on [GitHub Discussions](https://github.com/your-repo/discussions)
-- 📹 Watch tutorial videos (Coming Soon)
+- 🐛 Report issues on [GitHub Issues](https://github.com/Pusparaj99op/LogicLegions_HTH_2k25)
+- 💭 Join discussions on [GitHub Discussions](https://github.com/Pusparaj99op/LogicLegions_HTH_2k25)
+- 📹 Watch My Vlog Of HTH 2k25 At SDCE, Nagpur -->
 
 ---
 
@@ -297,4 +298,4 @@ Made with ❤️ for rural communities worldwide
 
 ---
 
-*Last Updated: August 19, 2025 | Version: 1.0.0*
+*Last Updated: August 19, 2025 | Version: 1.3.0*
