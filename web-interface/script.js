@@ -45,6 +45,20 @@ class VitalCareRuralComplete {
             storage: false,
             cellular: false
         };
+        this.trafficStats = {
+            packetsReceived: 0,
+            bytesReceived: 0,
+            packetRate: 0,
+            lastRateUpdate: Date.now(),
+            packetCounts: []
+        };
+        this.vitals = {
+            heartRate: null,
+            systolicBP: null,
+            diastolicBP: null,
+            spO2: null,
+            temperature: null
+        };
         
         this.init();
     }
@@ -52,13 +66,100 @@ class VitalCareRuralComplete {
     init() {
         console.log('🏥 VitalCare Rural Complete System Initializing...');
         
-        this.initializeWebSocket();
-        this.setupEventListeners();
-        this.updateUI();
-        this.startStatusUpdates();
-        this.initializeECGDisplay();
+        // Show loading indicator during initialization
+        this.showLoadingState('Initializing System...');
         
-        console.log('✅ Complete System Dashboard Ready!');
+        // Staggered initialization with visual feedback
+        setTimeout(() => {
+            this.updateLoadingState('Connecting to ESP32...', 20);
+            this.initializeWebSocket();
+            
+            setTimeout(() => {
+                this.updateLoadingState('Setting up interface...', 40);
+                this.setupEventListeners();
+                
+                setTimeout(() => {
+                    this.updateLoadingState('Preparing displays...', 60);
+                    this.updateUI();
+                    
+                    setTimeout(() => {
+                        this.updateLoadingState('Starting system monitors...', 80);
+                        this.startStatusUpdates();
+                        this.initializeECGDisplay();
+                        
+                        setTimeout(() => {
+                            this.updateLoadingState('Ready!', 100);
+                            // Hide loader after brief delay
+                            setTimeout(() => this.hideLoadingState(), 500);
+                            console.log('✅ Complete System Dashboard Ready!');
+                        }, 300);
+                    }, 300);
+                }, 300);
+            }, 300);
+        }, 300);
+    }
+    
+    showLoadingState(message) {
+        // Create loading overlay if it doesn't exist
+        let loadingOverlay = document.getElementById('loadingOverlay');
+        if (!loadingOverlay) {
+            loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'loadingOverlay';
+            loadingOverlay.style.position = 'fixed';
+            loadingOverlay.style.top = '0';
+            loadingOverlay.style.left = '0';
+            loadingOverlay.style.width = '100%';
+            loadingOverlay.style.height = '100%';
+            loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.style.flexDirection = 'column';
+            loadingOverlay.style.justifyContent = 'center';
+            loadingOverlay.style.alignItems = 'center';
+            loadingOverlay.style.zIndex = '9999';
+            loadingOverlay.style.transition = 'opacity 0.5s ease';
+            
+            // Create loading content
+            loadingOverlay.innerHTML = `
+                <h2 style="color: white; font-size: 2rem; margin-bottom: 1rem;">🏥 VitalCare Rural</h2>
+                <div class="loading"></div>
+                <div id="loadingMessage" style="color: white; margin-top: 1rem; font-size: 1.2rem;">${message}</div>
+                <div style="width: 50%; max-width: 400px; margin-top: 2rem;">
+                    <div style="background: rgba(255,255,255,0.2); height: 10px; border-radius: 5px; overflow: hidden;">
+                        <div id="loadingProgress" style="background: linear-gradient(90deg, var(--primary-color), var(--success-color)); 
+                            height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(loadingOverlay);
+        } else {
+            document.getElementById('loadingMessage').textContent = message;
+        }
+    }
+    
+    updateLoadingState(message, progress) {
+        const loadingMessage = document.getElementById('loadingMessage');
+        const loadingProgress = document.getElementById('loadingProgress');
+        
+        if (loadingMessage) {
+            loadingMessage.textContent = message;
+        }
+        
+        if (loadingProgress) {
+            loadingProgress.style.width = `${progress}%`;
+        }
+    }
+    
+    hideLoadingState() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => {
+                if (loadingOverlay.parentNode) {
+                    loadingOverlay.parentNode.removeChild(loadingOverlay);
+                }
+            }, 500);
+        }
     }
 
     initializeWebSocket() {
@@ -103,6 +204,9 @@ class VitalCareRuralComplete {
 
     handleWebSocketMessage(event) {
         try {
+            // Update traffic statistics
+            this.updateTrafficStats(event.data.length);
+            
             const data = JSON.parse(event.data);
             
             switch (data.type) {
@@ -131,6 +235,65 @@ class VitalCareRuralComplete {
             console.error('❌ Error parsing WebSocket message:', error);
         }
     }
+    
+    updateTrafficStats(messageSize) {
+        // Update packet and byte counts
+        this.trafficStats.packetsReceived++;
+        this.trafficStats.bytesReceived += messageSize;
+        
+        // Store timestamp for rate calculation
+        const now = Date.now();
+        this.trafficStats.packetCounts.push({
+            time: now,
+            size: messageSize
+        });
+        
+        // Only keep the last 30 seconds of packet data
+        const thirtySecondsAgo = now - 30000;
+        this.trafficStats.packetCounts = this.trafficStats.packetCounts.filter(
+            packet => packet.time > thirtySecondsAgo
+        );
+        
+        // Update packet rate every second
+        if (now - this.trafficStats.lastRateUpdate > 1000) {
+            const oneSecondAgo = now - 1000;
+            const recentPackets = this.trafficStats.packetCounts.filter(
+                packet => packet.time > oneSecondAgo
+            );
+            
+            this.trafficStats.packetRate = recentPackets.length;
+            this.trafficStats.lastRateUpdate = now;
+            
+            // Update the UI
+            this.updateTrafficDisplay();
+        }
+    }
+    
+    updateTrafficDisplay() {
+        // Format data for display
+        const packetRate = this.trafficStats.packetRate;
+        const totalData = this.formatBytes(this.trafficStats.bytesReceived);
+        
+        // Update UI elements
+        const dataRateElement = document.getElementById('dataRate');
+        const dataTotalElement = document.getElementById('dataTotal');
+        
+        if (dataRateElement) {
+            dataRateElement.textContent = `${packetRate} packets/sec`;
+            dataRateElement.style.color = packetRate > 30 ? '#28a745' : '#ffc107';
+        }
+        
+        if (dataTotalElement) {
+            dataTotalElement.textContent = totalData;
+        }
+    }
+    
+    formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+        else if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + ' MB';
+        else return (bytes / 1073741824).toFixed(2) + ' GB';
+    }
 
     handleInitMessage(data) {
         if (data.patientRegistered && data.patient) {
@@ -142,6 +305,17 @@ class VitalCareRuralComplete {
 
     handleVitalsUpdate(data) {
         if (!this.patientRegistered) return;
+        
+        // Store current vitals data
+        this.vitals = {
+            heartRate: data.heartRate,
+            systolicBP: data.systolicBP,
+            diastolicBP: data.diastolicBP,
+            spO2: data.spO2,
+            temperature: data.temperature,
+            ecgValue: data.ecgValue,
+            pressure: data.pressure
+        };
         
         // Update vital signs display with new data format
         this.updateVitalSign('heartRate', data.heartRate?.toFixed(0) || '--', 'BPM', this.getHeartRateStatus(data.heartRate));
@@ -304,47 +478,117 @@ class VitalCareRuralComplete {
         const canvas = document.getElementById('ecgWaveform');
         if (!canvas || this.ecgData.length < 2) return;
         
+        // Get canvas dimensions and context
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
         
-        // Clear canvas with black background
-        ctx.fillStyle = '#000';
+        // Create subtle fading effect for persistence
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.fillRect(0, 0, width, height);
         
-        // Draw grid
+        // Draw ECG components in order
         this.drawECGGrid(ctx, width, height);
-        
-        // Draw ECG waveform
         this.drawECGWaveform(ctx, width, height);
+        this.addECGTimestamp(ctx, width, height);
+    }
+    
+    addECGTimestamp(ctx, width, height) {
+        // Add timestamp to bottom right
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        
+        ctx.font = '12px Inter, sans-serif';
+        ctx.fillStyle = 'rgba(0, 255, 65, 0.7)';
+        ctx.textAlign = 'right';
+        ctx.fillText(timeString, width - 10, height - 10);
+        
+        // Add heart rate if available
+        if (this.vitals && this.vitals.heartRate) {
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 14px Inter, sans-serif';
+            ctx.fillStyle = 'rgba(0, 255, 65, 0.9)';
+            ctx.fillText(
+                `${this.vitals.heartRate.toFixed(0)} BPM`, 
+                10, 
+                height - 10
+            );
+            
+            // Add recording indicator
+            const blinkState = Math.floor(Date.now() / 500) % 2;
+            const recordingColor = blinkState ? 'rgba(255, 0, 0, 0.7)' : 'rgba(255, 0, 0, 0.3)';
+            
+            ctx.fillStyle = recordingColor;
+            ctx.beginPath();
+            ctx.arc(width - 20, 20, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = '10px Inter, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('REC', width - 32, 24);
+        }
     }
 
     drawECGGrid(ctx, width, height) {
-        ctx.strokeStyle = 'rgba(0, 255, 65, 0.3)';
-        ctx.lineWidth = 0.5;
+        // Major grid lines (every 5 small squares)
+        ctx.strokeStyle = 'rgba(0, 255, 65, 0.4)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
         
-        // Draw vertical grid lines
-        for (let x = 0; x < width; x += 20) {
-            ctx.beginPath();
+        for (let x = 0; x < width; x += 100) {
             ctx.moveTo(x, 0);
             ctx.lineTo(x, height);
-            ctx.stroke();
         }
         
-        // Draw horizontal grid lines
-        for (let y = 0; y < height; y += 20) {
-            ctx.beginPath();
+        for (let y = 0; y < height; y += 100) {
             ctx.moveTo(0, y);
             ctx.lineTo(width, y);
-            ctx.stroke();
         }
+        ctx.stroke();
+        
+        // Minor grid lines with improved styling
+        ctx.strokeStyle = 'rgba(0, 255, 65, 0.2)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        
+        for (let x = 0; x < width; x += 20) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+        }
+        
+        for (let y = 0; y < height; y += 20) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+        }
+        ctx.stroke();
+        
+        // Add reference markers
+        ctx.fillStyle = 'rgba(0, 255, 65, 0.8)';
+        ctx.textAlign = 'left';
+        ctx.font = '10px Inter, sans-serif';
+        ctx.fillText('1mV', 10, 20);
+        ctx.fillText('25mm/s', 10, height - 10);
     }
 
     drawECGWaveform(ctx, width, height) {
         if (this.ecgData.length < 2) return;
         
-        ctx.strokeStyle = '#00ff41';
-        ctx.lineWidth = 2;
+        // Create gradient for ECG line
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, 'rgba(0, 255, 65, 0.8)');
+        gradient.addColorStop(0.5, 'rgba(0, 255, 65, 1)');
+        gradient.addColorStop(1, 'rgba(0, 255, 65, 0.8)');
+        
+        // Add glow effect
+        ctx.shadowColor = 'rgba(0, 255, 65, 0.7)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.beginPath();
         
         // Normalize ECG data (assume 12-bit ADC, 0-4095 range)
@@ -352,7 +596,7 @@ class VitalCareRuralComplete {
             return height - (value / 4095) * height;
         });
         
-        // Draw the waveform
+        // Draw the waveform with smoother animation
         normalizedData.forEach((y, index) => {
             const x = (index / (normalizedData.length - 1)) * width;
             
@@ -364,6 +608,40 @@ class VitalCareRuralComplete {
         });
         
         ctx.stroke();
+        
+        // Reset shadow effects
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        
+        // Add current heart rate overlay
+        if (this.vitals && this.vitals.heartRate) {
+            ctx.font = 'bold 16px Inter, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillStyle = 'rgba(0, 255, 65, 0.9)';
+            ctx.fillText(`${this.vitals.heartRate} BPM`, width - 20, 30);
+            
+            // Add heart icon with pulse animation
+            const time = Date.now() / 1000;
+            const scale = 1 + Math.sin(time * 4) * 0.1; // Pulsing effect
+            
+            // Save context for transformation
+            ctx.save();
+            ctx.translate(width - 60, 24);
+            ctx.scale(scale, scale);
+            
+            // Draw heart icon
+            ctx.fillStyle = 'rgba(255, 60, 60, 0.9)';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(-3, -3, -8, -2, -8, 4);
+            ctx.bezierCurveTo(-8, 8, -4, 10, 0, 12);
+            ctx.bezierCurveTo(4, 10, 8, 8, 8, 4);
+            ctx.bezierCurveTo(8, -2, 3, -3, 0, 0);
+            ctx.fill();
+            
+            // Restore context
+            ctx.restore();
+        }
     }
 
     toggleECGPause() {
@@ -397,52 +675,125 @@ class VitalCareRuralComplete {
         const width = canvas.width;
         const height = canvas.height;
         
-        // Clear canvas with light background
-        ctx.fillStyle = '#f8f9fa';
+        // Create gradient background
+        const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+        bgGradient.addColorStop(0, '#f8f9fa');
+        bgGradient.addColorStop(1, '#ffffff');
+        
+        // Clear canvas with gradient background
+        ctx.fillStyle = bgGradient;
         ctx.fillRect(0, 0, width, height);
         
-        // Find min/max for scaling
+        // Find min/max for scaling with padding to avoid edges
         const values = data.map(point => point.value).filter(v => v !== undefined && v !== null);
         if (values.length < 2) return;
         
-        const min = Math.min(...values);
-        const max = Math.max(...values);
+        const min = Math.min(...values) - (Math.max(...values) - Math.min(...values)) * 0.1;
+        const max = Math.max(...values) + (Math.max(...values) - Math.min(...values)) * 0.1;
         const range = max - min || 1;
         
-        // Draw trend line
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
+        // Create gradient for line
+        const lineGradient = ctx.createLinearGradient(0, 0, 0, height);
+        
+        // Extract color components for gradient creation
+        let baseColor = color;
+        if (baseColor.startsWith('#')) {
+            // Convert hex to rgb if needed
+            const r = parseInt(baseColor.slice(1, 3), 16);
+            const g = parseInt(baseColor.slice(3, 5), 16);
+            const b = parseInt(baseColor.slice(5, 7), 16);
+            baseColor = `rgba(${r}, ${g}, ${b}`;
+        }
+        
+        lineGradient.addColorStop(0, baseColor.startsWith('rgba') ? `${baseColor}, 0.8)` : baseColor);
+        lineGradient.addColorStop(1, baseColor.startsWith('rgba') ? `${baseColor}, 1)` : color);
+        
+        // Draw smooth curved line
+        ctx.strokeStyle = lineGradient;
+        ctx.lineWidth = 2.5;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
         ctx.beginPath();
         
-        let firstPoint = true;
-        data.forEach((point, index) => {
-            if (point.value !== undefined && point.value !== null) {
-                const x = (index / (data.length - 1)) * width;
-                const y = height - ((point.value - min) / range) * (height - 10) - 5;
+        // Add shadow for depth
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
+        
+        // Filter valid points
+        const validPoints = data.filter(point => 
+            point.value !== undefined && 
+            point.value !== null);
+        
+        // Use Bezier curves for smoother visualization
+        if (validPoints.length > 0) {
+            // Start path
+            const firstPoint = validPoints[0];
+            const firstX = 0;
+            const firstY = height - ((firstPoint.value - min) / range) * (height - 10) - 5;
+            ctx.moveTo(firstX, firstY);
+            
+            // Draw curve through points
+            for (let i = 0; i < validPoints.length - 1; i++) {
+                const current = validPoints[i];
+                const next = validPoints[i + 1];
                 
-                if (firstPoint) {
-                    ctx.moveTo(x, y);
-                    firstPoint = false;
-                } else {
-                    ctx.lineTo(x, y);
-                }
+                const currX = (i / (validPoints.length - 1)) * width;
+                const currY = height - ((current.value - min) / range) * (height - 10) - 5;
+                
+                const nextX = ((i + 1) / (validPoints.length - 1)) * width;
+                const nextY = height - ((next.value - min) / range) * (height - 10) - 5;
+                
+                // Control points for Bezier curve
+                const cpX1 = currX + (nextX - currX) / 3;
+                const cpX2 = currX + 2 * (nextX - currX) / 3;
+                
+                ctx.bezierCurveTo(
+                    cpX1, currY,
+                    cpX2, nextY,
+                    nextX, nextY
+                );
             }
-        });
-        
-        ctx.stroke();
-        
-        // Draw data points
-        ctx.fillStyle = color;
-        data.forEach((point, index) => {
-            if (point.value !== undefined && point.value !== null) {
-                const x = (index / (data.length - 1)) * width;
-                const y = height - ((point.value - min) / range) * (height - 10) - 5;
+            
+            ctx.stroke();
+            
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Add area fill with gradient
+            const fillGradient = ctx.createLinearGradient(0, 0, 0, height);
+            fillGradient.addColorStop(0, baseColor.startsWith('rgba') ? `${baseColor}, 0.2)` : `${color}33`);
+            fillGradient.addColorStop(1, baseColor.startsWith('rgba') ? `${baseColor}, 0.05)` : `${color}11`);
+            
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            ctx.fillStyle = fillGradient;
+            ctx.fill();
+            
+            // Add current value indicator (last point)
+            if (validPoints.length > 0) {
+                const lastPoint = validPoints[validPoints.length - 1];
+                const lastX = width - 5;
+                const lastY = height - ((lastPoint.value - min) / range) * (height - 10) - 5;
                 
+                ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.arc(lastX, lastY, 4, 0, 2 * Math.PI);
                 ctx.fill();
+                
+                // Add glow effect
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(lastX, lastY, 5, 0, 2 * Math.PI);
+                ctx.stroke();
             }
-        });
+        }
     }
 
     checkForAlerts(data) {
@@ -638,23 +989,58 @@ class VitalCareRuralComplete {
     }
 
     showPatientInfo() {
-        // Hide registration form
-        document.getElementById('patientRegistration').style.display = 'none';
-        
-        // Show patient sections
-        ['patientInfo', 'vitalsSection', 'ecgDisplay', 'actionButtons'].forEach(id => {
-            const element = document.getElementById(id);
-            if (element) element.style.display = 'block';
-        });
-        
-        // Update patient info display
-        document.getElementById('currentPatientName').textContent = this.currentPatient.name;
-        document.getElementById('currentPatientAge').textContent = this.currentPatient.age;
-        document.getElementById('currentPatientGender').textContent = this.currentPatient.gender;
-        document.getElementById('currentPatientEmergency').textContent = this.currentPatient.emergencyContact;
-        
-        // Start session timer
-        this.startSessionTimer();
+        // Hide registration form with fade effect
+        const regForm = document.getElementById('patientRegistration');
+        regForm.style.opacity = '0';
+        setTimeout(() => {
+            regForm.style.display = 'none';
+            
+            // Show patient sections with staggered animation
+            ['patientInfo', 'vitalsSection', 'ecgDisplay', 'actionButtons', 'alertPanel'].forEach((id, index) => {
+                setTimeout(() => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'block';
+                        setTimeout(() => element.style.opacity = '1', 50);
+                    }
+                }, index * 200);
+            });
+            
+            // Update patient info display with enhanced details
+            const name = this.currentPatient.name;
+            document.getElementById('currentPatientName').textContent = name;
+            document.getElementById('currentPatientAge').textContent = this.currentPatient.age;
+            document.getElementById('currentPatientGender').textContent = this.currentPatient.gender;
+            document.getElementById('currentPatientEmergency').textContent = this.currentPatient.emergencyContact;
+            
+            // Set patient initials for avatar
+            const initials = name.split(' ')
+                .map(n => n[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase();
+            document.getElementById('patientInitials').textContent = initials;
+            
+            // Set medical conditions
+            const conditionsElement = document.getElementById('currentPatientConditions');
+            if (conditionsElement) {
+                conditionsElement.textContent = this.currentPatient.medicalConditions || 'None specified';
+            }
+            
+            // Generate session ID
+            const sessionId = `VCR-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+            const sessionIdElement = document.getElementById('sessionId');
+            if (sessionIdElement) {
+                sessionIdElement.textContent = sessionId;
+            }
+            
+            // Start session timer
+            this.startSessionTimer();
+            
+            // Log patient session
+            console.log(`📋 Patient session started: ${name} (${sessionId})`);
+            
+        }, 300);
     }
 
     startNewPatient() {
@@ -731,18 +1117,78 @@ class VitalCareRuralComplete {
 
     updateSystemStatus() {
         const statusFields = {
-            'wifiStatus': this.systemStatus.wifi ? 'Active' : 'Disconnected',
-            'pulseStatus': this.systemStatus.sensors ? 'Connected' : 'Disconnected',
-            'ecgSensorStatus': this.systemStatus.sensors ? 'Active' : 'Disconnected'
+            'wifiStatus': {
+                value: this.systemStatus.wifi ? 'Active' : 'Disconnected',
+                icon: this.systemStatus.wifi ? '📶' : '❌',
+                status: this.systemStatus.wifi
+            },
+            'pulseStatus': {
+                value: this.systemStatus.sensors ? 'Connected' : 'Disconnected',
+                icon: this.systemStatus.sensors ? '💓' : '❌',
+                status: this.systemStatus.sensors
+            },
+            'ecgSensorStatus': {
+                value: this.systemStatus.sensors ? 'Active' : 'Disconnected',
+                icon: this.systemStatus.sensors ? '✅' : '❌',
+                status: this.systemStatus.sensors
+            },
+            'storageStatus': {
+                value: this.systemStatus.storage ? 'Ready' : 'Error',
+                icon: this.systemStatus.storage ? '💾' : '❌',
+                status: this.systemStatus.storage
+            },
+            'cellularStatus': {
+                value: this.systemStatus.cellular ? 'Online' : 'Offline',
+                icon: this.systemStatus.cellular ? '📱' : '❌',
+                status: this.systemStatus.cellular
+            }
         };
         
-        Object.entries(statusFields).forEach(([id, value]) => {
+        Object.entries(statusFields).forEach(([id, data]) => {
             const element = document.getElementById(id);
             if (element) {
-                element.textContent = value;
-                element.style.color = value.includes('Disconnected') ? '#dc3545' : '#28a745';
+                // Create visual status indicator with icon
+                const statusColor = data.status ? '#28a745' : '#dc3545';
+                const pulseClass = data.status && (id === 'pulseStatus' || id === 'wifiStatus') ? 'pulse-animation' : '';
+                
+                element.innerHTML = `
+                    <span class="status-icon ${pulseClass}" style="color: ${statusColor}">
+                        ${data.icon}
+                    </span>
+                    <span style="color: ${statusColor}">${data.value}</span>
+                `;
+                
+                // Add tooltip with more details
+                element.title = `Last updated: ${new Date().toLocaleTimeString()}`;
+                
+                // Add or remove pulse animation class
+                if (data.status && (id === 'wifiStatus' || id === 'pulseStatus')) {
+                    element.classList.add('active-status');
+                } else {
+                    element.classList.remove('active-status');
+                }
             }
         });
+        
+        // Update system health indicator
+        const statusArray = Object.values(statusFields).map(s => s.status);
+        const workingCount = statusArray.filter(Boolean).length;
+        const totalCount = statusArray.length;
+        const healthPercent = Math.round((workingCount / totalCount) * 100);
+        
+        const healthIndicator = document.getElementById('systemHealth');
+        if (healthIndicator) {
+            let healthClass = 'critical';
+            if (healthPercent > 80) healthClass = 'normal';
+            else if (healthPercent > 50) healthClass = 'warning';
+            
+            healthIndicator.innerHTML = `
+                <div class="health-bar">
+                    <div class="health-progress ${healthClass}" style="width: ${healthPercent}%"></div>
+                </div>
+                <span>System Health: ${healthPercent}%</span>
+            `;
+        }
     }
 
     startStatusUpdates() {

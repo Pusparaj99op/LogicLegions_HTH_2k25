@@ -3,19 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏥 VitalCare Rural - Patient Monitoring Dashboard</title>
+    <meta name="description" content="VitalCare Rural - A comprehensive portable health monitoring system designed for educational purposes using ESP32.">
+    <meta name="keywords" content="VitalCare, healthcare monitoring, ESP32, medical sensors, vital signs, educational system">
+    <meta name="author" content="VitalCare Rural Team">
+    <meta name="theme-color" content="#3a7bd5">
+    <title>🏥 VitalCare Rural - Advanced Patient Monitoring Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
+    <header class="header" role="banner">
         <div class="header-content">
             <h1>🏥 VitalCare Rural</h1>
-            <p class="subtitle">Complete Portable Health Monitoring System</p>
+            <p class="subtitle">Advanced Portable Health Monitoring System</p>
             <div class="connection-status">
-                <span class="status-indicator" id="connectionStatus">🟢 Connected</span>
-                <span class="timestamp" id="lastUpdate">Last Update: --:--:--</span>
+                <span class="status-indicator" id="connectionStatus" aria-live="polite">🟢 Connected</span>
+                <span class="timestamp" id="lastUpdate" aria-live="polite">Last Update: --:--:--</span>
             </div>
         </div>
     </header>
@@ -109,33 +116,63 @@
             </form>
         </section>
 
-        <!-- Patient Info Display -->
-        <section class="card patient-info" id="patientInfo" style="display: none;">
+        <!-- Enhanced Patient Info Display -->
+        <section class="card patient-info" id="patientInfo" style="display: none;" aria-labelledby="current-patient-heading">
             <div class="card-header">
-                <h2>👤 Current Patient</h2>
-                <button class="btn btn-secondary btn-sm" id="newPatientBtn">🔄 New Patient</button>
+                <h2 id="current-patient-heading">👤 Active Patient Session</h2>
+                <div class="card-actions">
+                    <span class="session-badge">
+                        <span class="pulse-dot"></span>
+                        <span>Session Active</span>
+                    </span>
+                    <button class="btn btn-secondary btn-sm" id="newPatientBtn" aria-label="Start new patient session">
+                        <span class="btn-icon">🔄</span>
+                        <span>New Patient</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="patient-profile">
+                <div class="patient-avatar">
+                    <div class="avatar-placeholder">
+                        <span id="patientInitials">--</span>
+                    </div>
+                </div>
+                <div class="patient-info-block">
+                    <h3 class="patient-name" id="currentPatientName">--</h3>
+                    <div class="patient-meta">
+                        <span class="patient-meta-item">
+                            <span class="meta-icon">🔢</span>
+                            <span id="currentPatientAge">--</span> years
+                        </span>
+                        <span class="patient-meta-item">
+                            <span class="meta-icon">⚧️</span>
+                            <span id="currentPatientGender">--</span>
+                        </span>
+                    </div>
+                </div>
             </div>
             
             <div class="patient-details">
                 <div class="detail-item">
-                    <span class="label">Name:</span>
-                    <span class="value" id="currentPatientName">--</span>
-                </div>
-                <div class="detail-item">
-                    <span class="label">Age:</span>
-                    <span class="value" id="currentPatientAge">--</span>
-                </div>
-                <div class="detail-item">
-                    <span class="label">Gender:</span>
-                    <span class="value" id="currentPatientGender">--</span>
-                </div>
-                <div class="detail-item">
+                    <span class="detail-icon">📱</span>
                     <span class="label">Emergency Contact:</span>
                     <span class="value" id="currentPatientEmergency">--</span>
                 </div>
                 <div class="detail-item">
-                    <span class="label">Session Time:</span>
+                    <span class="detail-icon">🩺</span>
+                    <span class="label">Medical Conditions:</span>
+                    <span class="value" id="currentPatientConditions">--</span>
+                </div>
+                <div class="detail-item active-session">
+                    <span class="detail-icon">⏱️</span>
+                    <span class="label">Session Duration:</span>
                     <span class="value" id="sessionTime">00:00:00</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">📋</span>
+                    <span class="label">Session ID:</span>
+                    <span class="value" id="sessionId">VCR-2025-000</span>
                 </div>
             </div>
         </section>
@@ -360,14 +397,103 @@
         </section>
     </div>
 
+    <!-- System Status -->
+    <section class="card system-status" aria-labelledby="status-heading">
+        <div class="card-header">
+            <h3 id="status-heading">🔧 System Health Monitor</h3>
+            <div class="refresh-indicator">
+                <span class="pulse-dot"></span>
+                <span>Auto-updating status</span>
+            </div>
+        </div>
+        
+        <!-- System Health Indicator -->
+        <div class="card-section mb-3" id="systemHealth" aria-label="System health status">
+            <div class="health-bar">
+                <div class="health-progress normal" style="width: 100%"></div>
+            </div>
+            <span class="text-center" style="display: block;">System Health: 100%</span>
+        </div>
+            
+        <div class="status-grid">
+            <div class="status-item" role="status">
+                <span class="status-icon">📡</span>
+                <span class="status-label">ESP32 WiFi</span>
+                <span class="status-value" id="wifiStatus">Active</span>
+            </div>
+            <div class="status-item" role="status">
+                <span class="status-icon">❤️</span>
+                <span class="status-label">Pulse Sensor</span>
+                <span class="status-value" id="pulseStatus">Connected</span>
+            </div>
+            <div class="status-item" role="status">
+                <span class="status-icon">📈</span>
+                <span class="status-label">AD8232 ECG</span>
+                <span class="status-value" id="ecgSensorStatus">Active</span>
+            </div>
+            <div class="status-item" role="status">
+                <span class="status-icon">🌡️</span>
+                <span class="status-label">BMP180</span>
+                <span class="status-value" id="bmpStatus">Connected</span>
+            </div>
+            <div class="status-item" role="status">
+                <span class="status-icon">💾</span>
+                <span class="status-label">MicroSD</span>
+                <span class="status-value" id="sdStatus">Ready</span>
+            </div>
+            <div class="status-item" role="status">
+                <span class="status-icon">📱</span>
+                <span class="status-label">SIM800L</span>
+                <span class="status-value" id="simStatus">Online</span>
+            </div>
+            <div class="status-item" role="status">
+                <span class="status-icon">👥</span>
+                <span class="status-label">Connected Devices</span>
+                <span class="status-value" id="clientCount">1 Client</span>
+            </div>
+            <div class="status-item" role="status">
+                <span class="status-icon">⏱️</span>
+                <span class="status-label">System Uptime</span>
+                <span class="status-value" id="uptime">00:00:00</span>
+            </div>
+        </div>
+        
+        <!-- Data Traffic Monitor -->
+        <div class="card-section mt-3 p-2" aria-label="Data traffic">
+            <div class="text-center">
+                <span>Data Packet Rate: </span>
+                <span id="dataRate" class="text-success">45 packets/sec</span> | 
+                <span>Total Transferred: </span>
+                <span id="dataTotal" class="text-info">2.4 MB</span>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
-    <footer class="footer">
-        <p>🏥 VitalCare Rural - Educational Project | Not for Medical Diagnosis</p>
-        <p>Single ESP32 Complete System | Developed for HTH 2025 @ SDCE Nagpur</p>
-        <p>⚠️ For Educational and Demonstration Purposes Only</p>
+    <footer class="footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="footer-section">
+                <p class="footer-title">🏥 VitalCare Rural</p>
+                <p class="footer-subtitle">Advanced ESP32-Based Health Monitoring Platform</p>
+                <p class="footer-warning">⚠️ Educational Project Only - Not for Medical Diagnosis</p>
+            </div>
+            <div class="footer-section">
+                <p>Single ESP32 Complete System | HTH 2025 @ SDCE Nagpur</p>
+                <p class="version">Version 2.0 | Updated August 2025</p>
+            </div>
+            <div class="footer-legal">
+                <p>© 2025 VitalCare Rural Team | <a href="#" class="footer-link">Privacy Policy</a> | <a href="#" class="footer-link">Terms of Use</a></p>
+            </div>
+        </div>
     </footer>
 
     <!-- Scripts -->
     <script src="script.js"></script>
+    <script>
+        // Initialize VitalCare Rural Dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🏥 VitalCare Rural Dashboard v2.0 Initializing...');
+        });
+    </script>
 </body>
 </html>
