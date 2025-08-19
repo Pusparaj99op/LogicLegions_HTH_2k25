@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 VitalCare Rural - Patient Monitoring Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>🏥 VitalCare Rural</h1>
+            <p class="subtitle">Complete Portable Health Monitoring System</p>
+            <div class="connection-status">
+                <span class="status-indicator" id="connectionStatus">🟢 Connected</span>
+                <span class="timestamp" id="lastUpdate">Last Update: --:--:--</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- System Information -->
+        <section class="card system-info">
+            <div class="card-header">
+                <h2>📊 System Information</h2>
+                <div class="device-info">Single ESP32-WROOM-32 Complete System</div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-icon">📡</span>
+                    <span class="info-label">WiFi Hotspot</span>
+                    <span class="info-value" id="wifiInfo">VitalCare-Rural</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">🔬</span>
+                    <span class="info-label">Sensors Active</span>
+                    <span class="info-value" id="sensorCount">5 Components</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">💾</span>
+                    <span class="info-label">Data Storage</span>
+                    <span class="info-value" id="storageInfo">MicroSD Ready</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">📱</span>
+                    <span class="info-label">SMS Alerts</span>
+                    <span class="info-value" id="smsInfo">SIM800L Ready</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Patient Registration Section -->
+        <section class="card patient-section" id="patientRegistration">
+            <div class="card-header">
+                <h2>👤 Patient Registration</h2>
+                <p>Enter patient information to begin comprehensive monitoring</p>
+            </div>
+            
+            <form id="patientForm" class="patient-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientName">Full Name *</label>
+                        <input type="text" id="patientName" placeholder="Enter patient's full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientAge">Age *</label>
+                        <input type="number" id="patientAge" placeholder="Age" min="1" max="150" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patientGender">Gender *</label>
+                        <select id="patientGender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patientContact">Contact Number</label>
+                        <input type="tel" id="patientContact" placeholder="Phone number">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="emergencyContact">Emergency Contact *</label>
+                        <input type="tel" id="emergencyContact" placeholder="Emergency contact for SMS alerts" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="medicalConditions">Known Medical Conditions</label>
+                        <input type="text" id="medicalConditions" placeholder="Any known conditions (optional)">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <span>📝 Register Patient & Start Monitoring</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Patient Info Display -->
+        <section class="card patient-info" id="patientInfo" style="display: none;">
+            <div class="card-header">
+                <h2>👤 Current Patient</h2>
+                <button class="btn btn-secondary btn-sm" id="newPatientBtn">🔄 New Patient</button>
+            </div>
+            
+            <div class="patient-details">
+                <div class="detail-item">
+                    <span class="label">Name:</span>
+                    <span class="value" id="currentPatientName">--</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Age:</span>
+                    <span class="value" id="currentPatientAge">--</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Gender:</span>
+                    <span class="value" id="currentPatientGender">--</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Emergency Contact:</span>
+                    <span class="value" id="currentPatientEmergency">--</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Session Time:</span>
+                    <span class="value" id="sessionTime">00:00:00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vital Signs Dashboard -->
+        <section class="card vitals-dashboard" id="vitalsSection" style="display: none;">
+            <div class="card-header">
+                <h2>📊 Live Vital Signs</h2>
+                <div class="refresh-indicator">
+                    <span class="pulse-dot"></span>
+                    <span>Real-time monitoring (1s updates)</span>
+                </div>
+            </div>
+            
+            <div class="vitals-grid">
+                <!-- Heart Rate -->
+                <div class="vital-card heart-rate">
+                    <div class="vital-icon">❤️</div>
+                    <div class="vital-content">
+                        <h3>Heart Rate</h3>
+                        <div class="vital-value">
+                            <span class="value" id="heartRate">--</span>
+                            <span class="unit">BPM</span>
+                        </div>
+                        <div class="vital-status">
+                            <span class="status-badge" id="hrStatus">Initializing</span>
+                        </div>
+                        <div class="vital-source">Pulse Sensor</div>
+                    </div>
+                    <div class="vital-trend" id="hrTrend">
+                        <canvas id="hrChart" width="100" height="40"></canvas>
+                    </div>
+                </div>
+
+                <!-- Blood Pressure -->
+                <div class="vital-card blood-pressure">
+                    <div class="vital-icon">🩸</div>
+                    <div class="vital-content">
+                        <h3>Blood Pressure</h3>
+                        <div class="vital-value">
+                            <span class="value" id="bloodPressure">--/--</span>
+                            <span class="unit">mmHg</span>
+                        </div>
+                        <div class="vital-status">
+                            <span class="status-badge" id="bpStatus">Initializing</span>
+                        </div>
+                        <div class="vital-source">Estimated from HR</div>
+                    </div>
+                    <div class="vital-trend" id="bpTrend">
+                        <canvas id="bpChart" width="100" height="40"></canvas>
+                    </div>
+                </div>
+
+                <!-- SpO2 -->
+                <div class="vital-card oxygen">
+                    <div class="vital-icon">🫁</div>
+                    <div class="vital-content">
+                        <h3>Oxygen Saturation</h3>
+                        <div class="vital-value">
+                            <span class="value" id="spO2">--%</span>
+                            <span class="unit"></span>
+                        </div>
+                        <div class="vital-status">
+                            <span class="status-badge" id="spo2Status">Initializing</span>
+                        </div>
+                        <div class="vital-source">Estimated from ECG</div>
+                    </div>
+                    <div class="vital-trend" id="spo2Trend">
+                        <canvas id="spo2Chart" width="100" height="40"></canvas>
+                    </div>
+                </div>
+
+                <!-- Temperature -->
+                <div class="vital-card temperature">
+                    <div class="vital-icon">🌡️</div>
+                    <div class="vital-content">
+                        <h3>Temperature</h3>
+                        <div class="vital-value">
+                            <span class="value" id="temperature">--</span>
+                            <span class="unit">°F</span>
+                        </div>
+                        <div class="vital-status">
+                            <span class="status-badge" id="tempStatus">Initializing</span>
+                        </div>
+                        <div class="vital-source">BMP180 Sensor</div>
+                    </div>
+                    <div class="vital-trend" id="tempTrend">
+                        <canvas id="tempChart" width="100" height="40"></canvas>
+                    </div>
+                </div>
+
+                <!-- ECG Signal -->
+                <div class="vital-card ecg">
+                    <div class="vital-icon">📈</div>
+                    <div class="vital-content">
+                        <h3>ECG Signal</h3>
+                        <div class="vital-value">
+                            <span class="value" id="ecgValue">--</span>
+                            <span class="unit">mV</span>
+                        </div>
+                        <div class="vital-status">
+                            <span class="status-badge" id="ecgStatus">Initializing</span>
+                        </div>
+                        <div class="vital-source">AD8232 Sensor</div>
+                    </div>
+                    <div class="vital-trend" id="ecgTrend">
+                        <canvas id="ecgChart" width="100" height="40"></canvas>
+                    </div>
+                </div>
+
+                <!-- Environmental Pressure -->
+                <div class="vital-card pressure">
+                    <div class="vital-icon">🌊</div>
+                    <div class="vital-content">
+                        <h3>Atmospheric Pressure</h3>
+                        <div class="vital-value">
+                            <span class="value" id="pressure">--</span>
+                            <span class="unit">hPa</span>
+                        </div>
+                        <div class="vital-status">
+                            <span class="status-badge" id="pressureStatus">Initializing</span>
+                        </div>
+                        <div class="vital-source">BMP180 Sensor</div>
+                    </div>
+                    <div class="vital-trend" id="pressureTrend">
+                        <canvas id="pressureChart" width="100" height="40"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ECG Waveform Display -->
+        <section class="card ecg-display" id="ecgDisplay" style="display: none;">
+            <div class="card-header">
+                <h2>📈 ECG Waveform</h2>
+                <div class="ecg-controls">
+                    <button class="btn btn-sm" id="pauseECG">⏸️ Pause</button>
+                    <button class="btn btn-sm" id="resetECG">🔄 Reset</button>
+                </div>
+            </div>
+            <div class="ecg-container">
+                <canvas id="ecgWaveform" width="800" height="200"></canvas>
+                <div class="ecg-grid"></div>
+            </div>
+        </section>
+
+        <!-- Alert Panel -->
+        <section class="card alert-panel" id="alertPanel" style="display: none;">
+            <div class="card-header">
+                <h2>⚠️ Alerts & Notifications</h2>
+                <button class="btn btn-secondary btn-sm" id="clearAlertsBtn">🗑️ Clear</button>
+            </div>
+            <div id="alertsList" class="alerts-list">
+                <!-- Alerts will be dynamically added here -->
+            </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="action-buttons" id="actionButtons" style="display: none;">
+            <button class="btn btn-success" id="saveReadingBtn">
+                💾 Save Reading to SD Card
+            </button>
+            <button class="btn btn-warning" id="emergencyBtn">
+                🚨 Send Emergency SMS
+            </button>
+            <button class="btn btn-info" id="printReportBtn">
+                📄 Generate Patient Report
+            </button>
+            <button class="btn btn-secondary" id="exportDataBtn">
+                📊 Export Data (CSV)
+            </button>
+        </section>
+
+        <!-- System Status -->
+        <section class="card system-status">
+            <div class="card-header">
+                <h3>🔧 Hardware Component Status</h3>
+            </div>
+            
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-icon">📡</span>
+                    <span class="status-label">ESP32 WiFi</span>
+                    <span class="status-value" id="wifiStatus">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">❤️</span>
+                    <span class="status-label">Pulse Sensor</span>
+                    <span class="status-value" id="pulseStatus">Connected</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">📈</span>
+                    <span class="status-label">AD8232 ECG</span>
+                    <span class="status-value" id="ecgSensorStatus">Active</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">🌡️</span>
+                    <span class="status-label">BMP180</span>
+                    <span class="status-value" id="bmpStatus">Connected</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">💾</span>
+                    <span class="status-label">MicroSD</span>
+                    <span class="status-value" id="sdStatus">Ready</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">📱</span>
+                    <span class="status-label">SIM800L</span>
+                    <span class="status-value" id="simStatus">Online</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">👥</span>
+                    <span class="status-label">Connected Devices</span>
+                    <span class="status-value" id="clientCount">1 Client</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">⏱️</span>
+                    <span class="status-label">System Uptime</span>
+                    <span class="status-value" id="uptime">00:00:00</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🏥 VitalCare Rural - Educational Project | Not for Medical Diagnosis</p>
+        <p>Single ESP32 Complete System | Developed for HTH 2025 @ SDCE Nagpur</p>
+        <p>⚠️ For Educational and Demonstration Purposes Only</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
