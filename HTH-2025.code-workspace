@@ -1,0 +1,29 @@
+{
+    "folders": [
+        {
+            "name": "HTH-2025 IoT Workspace",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.pio": true,
+            "**/build": true,
+            "**/.pioenvs": true,
+            "**/.piolibdeps": true
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "platformio.platformio-ide",
+            "espressif.esp-idf-extension",
+            "ms-vscode.vscode-serial-monitor",
+            "wokwi.wokwi-vscode",
+            "jeff-hykin.better-cpp-syntax",
+            "hancel.serialport-helper",
+            "ms-vscode.cpptools",
+            "ms-vscode.cmake-tools",
+            "formulahendry.code-runner"
+        ]
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PlatformIO Debugger",
+            "executable": "${workspaceFolder}/.pio/build/esp32dev/firmware.elf",
+            "projectEnvName": "esp32dev",
+            "toolchainBinDir": "${platformio.core_dir}/packages/toolchain-xtensa32/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug"
+            }
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PlatformIO Debugger (skip build)",
+            "executable": "${workspaceFolder}/.pio/build/esp32dev/firmware.elf",
+            "projectEnvName": "esp32dev",
+            "toolchainBinDir": "${platformio.core_dir}/packages/toolchain-xtensa32/bin",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "espidf",
+            "request": "launch",
+            "name": "ESP-IDF Debug",
+            "appOffset": "0x10000",
+            "initGdbCommands": [
+                "set remote hardware-watchpoint-limit 2",
+                "mon reset halt",
+                "flushregs"
+            ],
+            "env": {
+                "PATH": "${env:PATH}"
+            }
+        }
+    ]
+}
