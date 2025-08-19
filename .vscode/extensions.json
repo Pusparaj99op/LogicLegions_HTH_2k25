@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "ms-vscode.vscode-arduino",
+    "ms-vscode.cpptools",
+    "ms-vscode.cpptools-extension-pack",
+    "espressif.esp-idf-extension",
+    "platformio.platformio-ide",
+    "ms-vscode.vscode-serial-monitor",
+    "aaron-bond.better-comments",
+    "eamodio.gitlens",
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    "formulahendry.code-runner",
+    "ms-vscode.hexeditor"
+  ],
+  "unwantedRecommendations": []
+}

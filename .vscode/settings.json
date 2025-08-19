@@ -1,0 +1,93 @@
+{
+  // Arduino Configuration
+  "arduino.path": "/usr/share/arduino",
+  "arduino.commandPath": "arduino",
+  "arduino.logLevel": "info",
+  "arduino.enableUSBDetection": true,
+  "arduino.disableTestingOpen": false,
+  "arduino.skipHeaderProvider": false,
+  "arduino.additionalUrls": [
+    "https://dl.espressif.com/dl/package_esp32_index.json",
+    "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json"
+  ],
+  
+  // C/C++ Configuration
+  "C_Cpp.intelliSenseEngine": "Default",
+  "C_Cpp.errorSquiggles": "Enabled",
+  "C_Cpp.autocompleteAddParentheses": true,
+  "C_Cpp.formatting": "Default",
+  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 2, ColumnLimit: 100 }",
+  
+  // Editor Settings
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  
+  // File Associations
+  "files.associations": {
+    "*.ino": "cpp",
+    "*.pde": "cpp",
+    "*.h": "cpp",
+    "*.hpp": "cpp",
+    "*.cpp": "cpp",
+    "*.c": "c"
+  },
+  
+  // Serial Monitor Settings
+  "serialMonitor.baudRate": 115200,
+  "serialMonitor.lineEnding": "CRLF",
+  "serialMonitor.timestampFormat": "hh:mm:ss",
+  
+  // PlatformIO Settings
+  "platformio-ide.useBuiltinPIOCore": true,
+  "platformio-ide.useDevelopmentPIOCore": false,
+  "platformio-ide.autoRebuildAutocompleteIndex": true,
+  
+  // ESP-IDF Settings
+  "idf.espIdfPath": "/opt/esp/idf",
+  "idf.toolsPath": "/opt/esp",
+  "idf.pythonBinPath": "/opt/esp/python_env/idf5.0_py3.8_env/bin/python",
+  "idf.customExtraPaths": "",
+  
+  // Git Settings
+  "git.ignoreLimitWarning": true,
+  "git.autofetch": true,
+  
+  // Terminal Settings
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "bash",
+      "args": []
+    }
+  },
+  
+  // Exclude files from explorer
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/*.o": true,
+    "**/*.hex": true,
+    "**/*.elf": true,
+    "**/.pio": true,
+    "**/.pioenvs": true,
+    "**/.piolibdeps": true,
+    "**/build": true,
+    "**/dist": true
+  },
+  
+  // Search exclude
+  "search.exclude": {
+    "**/.pio": true,
+    "**/.pioenvs": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/*.hex": true,
+    "**/*.elf": true
+  }
+}

@@ -1,0 +1,128 @@
+# IDE and Editor files
+.vscode/launch.json
+.vscode/ipch/
+.idea/
+*.swp
+*.swo
+*~
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Arduino compilation files
+*.hex
+*.elf
+*.bin
+*.map
+
+# Arduino build directories
+build/
+.build/
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# ESP-IDF
+build/
+sdkconfig
+sdkconfig.old
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output/
+
+# node_modules (if using Node.js tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Arduino libraries cache
+libraries/cache/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# JetBrains IDEs
+.idea/
+
+# VSCode workspace files (optional)
+*.code-workspace
+
+# ESP32 specific
+.espressif/
+tools/
+
+# Custom library builds
+lib/
+include/
+
+# Documentation builds
+docs/_build/
+site/

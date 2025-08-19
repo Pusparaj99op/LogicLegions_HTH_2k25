@@ -1,0 +1,96 @@
+;
+; PlatformIO Project Configuration Template
+; 
+; This is a template platformio.ini file for ESP32 projects.
+; Copy this file to your project root and modify as needed.
+;
+; For more information about platformio.ini:
+; https://docs.platformio.org/page/projectconf.html
+;
+
+[platformio]
+; Set default environment
+default_envs = esp32dev
+
+[env:esp32dev]
+; ESP32 DevKitC configuration
+platform = espressif32
+board = esp32dev
+framework = arduino
+
+; Upload and monitor settings
+upload_speed = 921600
+monitor_speed = 115200
+monitor_filters = esp32_exception_decoder
+
+; Build settings
+build_flags = 
+    -DCORE_DEBUG_LEVEL=3
+    -DBOARD_HAS_PSRAM
+
+; Dependencies (uncomment as needed)
+lib_deps = 
+    ; WiFi and networking
+    ; https://github.com/me-no-dev/ESPAsyncWebServer
+    ; https://github.com/bblanchon/ArduinoJson
+    
+    ; Sensors and displays
+    ; adafruit/Adafruit Unified Sensor
+    ; adafruit/Adafruit BME280 Library
+    ; adafruit/Adafruit SSD1306
+    
+    ; Other common libraries
+    ; https://github.com/tzapu/WiFiManager
+    ; https://github.com/knolleary/pubsubclient
+
+[env:esp32-wroom-32]
+; ESP32-WROOM-32 specific configuration
+platform = espressif32
+board = esp32-wroom-32
+framework = arduino
+upload_speed = 921600
+monitor_speed = 115200
+monitor_filters = esp32_exception_decoder
+
+[env:esp32cam]
+; ESP32-CAM configuration
+platform = espressif32
+board = esp32cam
+framework = arduino
+upload_speed = 921600
+monitor_speed = 115200
+monitor_filters = esp32_exception_decoder
+build_flags = 
+    -DBOARD_HAS_PSRAM
+    -mfix-esp32-psram-cache-issue
+
+[env:arduino_uno]
+; Arduino Uno configuration  
+platform = atmelavr
+board = uno
+framework = arduino
+upload_speed = 115200
+monitor_speed = 9600
+
+[env:arduino_nano]
+; Arduino Nano configuration
+platform = atmelavr
+board = nanoatmega328
+framework = arduino
+upload_speed = 57600
+monitor_speed = 9600
+
+[env:arduino_mega]
+; Arduino Mega 2560 configuration
+platform = atmelavr
+board = megaatmega2560
+framework = arduino
+upload_speed = 115200
+monitor_speed = 9600
+
+; Global build options (apply to all environments)
+[common]
+build_flags = 
+    -Wall
+    -Wextra
+    -pedantic

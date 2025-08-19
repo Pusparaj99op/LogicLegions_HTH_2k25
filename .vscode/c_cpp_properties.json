@@ -1,0 +1,86 @@
+{
+  "configurations": [
+    {
+      "name": "Arduino",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${HOME}/.arduino15/packages/**",
+        "${HOME}/Arduino/libraries/**",
+        "/usr/share/arduino/hardware/**",
+        "/usr/share/arduino/libraries/**",
+        "${workspaceFolder}/libraries/**"
+      ],
+      "defines": [
+        "ARDUINO=10819",
+        "ARDUINO_AVR_UNO",
+        "ARDUINO_ARCH_AVR",
+        "__AVR_ATmega328P__"
+      ],
+      "compilerPath": "/usr/bin/avr-gcc",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "gcc-x64",
+      "forcedInclude": [
+        "${HOME}/.arduino15/packages/arduino/hardware/avr/*/cores/arduino/Arduino.h"
+      ]
+    },
+    {
+      "name": "ESP32",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${HOME}/.arduino15/packages/esp32/hardware/esp32/*/cores/esp32/**",
+        "${HOME}/.arduino15/packages/esp32/hardware/esp32/*/libraries/**",
+        "${HOME}/.arduino15/packages/esp32/hardware/esp32/*/tools/sdk/include/**",
+        "${HOME}/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/*/xtensa-esp32-elf/include/**",
+        "${HOME}/Arduino/libraries/**",
+        "${workspaceFolder}/libraries/**"
+      ],
+      "defines": [
+        "ESP32",
+        "ARDUINO=10819",
+        "ARDUINO_ESP32_DEV",
+        "ARDUINO_ARCH_ESP32",
+        "ARDUINO_BOARD=\"ESP32_DEV\"",
+        "ARDUINO_VARIANT=\"esp32\"",
+        "ESP32_WROOM_32",
+        "CORE_DEBUG_LEVEL=0"
+      ],
+      "compilerPath": "${HOME}/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/*/bin/xtensa-esp32-elf-gcc",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "gcc-x64",
+      "forcedInclude": [
+        "${HOME}/.arduino15/packages/esp32/hardware/esp32/*/cores/esp32/Arduino.h"
+      ]
+    },
+    {
+      "name": "ESP8266",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${HOME}/.arduino15/packages/esp8266/hardware/esp8266/*/cores/esp8266/**",
+        "${HOME}/.arduino15/packages/esp8266/hardware/esp8266/*/libraries/**",
+        "${HOME}/.arduino15/packages/esp8266/hardware/esp8266/*/tools/sdk/include/**",
+        "${HOME}/.arduino15/packages/esp8266/tools/xtensa-lx106-elf-gcc/*/xtensa-lx106-elf/include/**",
+        "${HOME}/Arduino/libraries/**",
+        "${workspaceFolder}/libraries/**"
+      ],
+      "defines": [
+        "ESP8266",
+        "ARDUINO=10819",
+        "ARDUINO_ESP8266_WEMOS_D1MINI",
+        "ARDUINO_ARCH_ESP8266",
+        "ARDUINO_BOARD=\"WEMOS_D1MINI\"",
+        "FLASHMODE_DIO",
+        "LWIP_OPEN_SRC"
+      ],
+      "compilerPath": "${HOME}/.arduino15/packages/esp8266/tools/xtensa-lx106-elf-gcc/*/bin/xtensa-lx106-elf-gcc",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "gcc-x64",
+      "forcedInclude": [
+        "${HOME}/.arduino15/packages/esp8266/hardware/esp8266/*/cores/esp8266/Arduino.h"
+      ]
+    }
+  ],
+  "version": 4
+}
