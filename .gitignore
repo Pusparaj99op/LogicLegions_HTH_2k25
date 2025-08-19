@@ -112,8 +112,8 @@ libraries/cache/
 # JetBrains IDEs
 .idea/
 
-# VSCode workspace files (optional)
-*.code-workspace
+# VSCode workspace files (optional - uncomment to ignore)
+# *.code-workspace
 
 # ESP32 specific
 .espressif/

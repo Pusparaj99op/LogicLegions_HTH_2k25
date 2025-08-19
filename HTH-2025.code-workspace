@@ -1,0 +1,66 @@
+{
+  "folders": [
+    {
+      "name": "HTH-2025",
+      "path": "."
+    }
+  ],
+  "settings": {
+    // Inherit all settings from .vscode/settings.json
+    "files.defaultLanguage": "cpp",
+    "files.autoSave": "onFocusChange",
+    "workbench.iconTheme": "vs-seti",
+    "breadcrumbs.enabled": true,
+    "editor.minimap.enabled": true,
+    
+    // File explorer settings
+    "explorer.confirmDelete": true,
+    "explorer.confirmDragAndDrop": true,
+    "explorer.sortOrder": "type",
+    
+    // Terminal settings
+    "terminal.integrated.fontSize": 14,
+    "terminal.integrated.copyOnSelection": true,
+    
+    // Arduino/IoT specific
+    "arduino.useArduinoCli": true,
+    "arduino.showBoardType": true,
+    "arduino.showVerifyOutput": true
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-arduino",
+      "ms-vscode.cpptools",
+      "ms-vscode.cpptools-extension-pack",
+      "espressif.esp-idf-extension",
+      "platformio.platformio-ide",
+      "ms-vscode.vscode-serial-monitor"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Setup: Install Arduino CLI",
+        "type": "shell",
+        "command": "curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": true,
+          "panel": "new"
+        },
+        "linux": {
+          "command": "curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh"
+        },
+        "windows": {
+          "command": "winget install ArduinoSA.ArduinoCLI"
+        },
+        "osx": {
+          "command": "brew install arduino-cli"
+        }
+      }
+    ]
+  }
+}
