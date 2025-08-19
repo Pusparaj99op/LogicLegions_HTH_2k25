@@ -1,0 +1,82 @@
+{
+    "folders": [
+        {
+            "name": "VitalCare Rural - IoT Health Monitor",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.pio": true,
+            "**/build": true,
+            "**/.pioenvs": true,
+            "**/.piolibdeps": true
+        },
+        "C_Cpp.default.includePath": [
+            "${workspaceFolder}/**",
+            "${workspaceFolder}/firmware/*/include",
+            "${workspaceFolder}/firmware/*/src"
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "platformio.platformio-ide",
+            "espressif.esp-idf-extension",
+            "ms-vscode.vscode-serial-monitor",
+            "ms-vscode.cpptools",
+            "jeff-hykin.better-cpp-syntax",
+            "bradlc.vscode-tailwindcss"
+        ]
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "Build All ESP32 Modules",
+                "group": "build",
+                "type": "shell",
+                "command": "pio",
+                "args": ["run"],
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always",
+                    "focus": false,
+                    "panel": "shared"
+                }
+            },
+            {
+                "label": "Upload Main Controller",
+                "group": "build",
+                "type": "shell",
+                "command": "pio",
+                "args": ["run", "--target", "upload", "--environment", "esp32-main"],
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always"
+                }
+            },
+            {
+                "label": "Upload Sensor Controller", 
+                "group": "build",
+                "type": "shell",
+                "command": "pio",
+                "args": ["run", "--target", "upload", "--environment", "esp32-sensors"],
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always"
+                }
+            },
+            {
+                "label": "Upload Communication Controller",
+                "group": "build", 
+                "type": "shell",
+                "command": "pio",
+                "args": ["run", "--target", "upload", "--environment", "esp32-communication"],
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always"
+                }
+            }
+        ]
+    }
+}

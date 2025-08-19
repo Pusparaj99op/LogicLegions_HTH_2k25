@@ -1,17 +1,17 @@
 /*
  * VitalCare Rural - Main ESP32 Web Server
- * 
+ *
  * This ESP32 module serves as the main web interface for the VitalCare Rural system.
  * It creates a WiFi Access Point and hosts a real-time web dashboard for monitoring
  * patient vital signs.
- * 
+ *
  * Features:
  * - WiFi Access Point for mobile device connectivity
  * - Real-time web dashboard with WebSocket communication
  * - Patient registration and management
  * - Live vital signs display with 1-second updates
  * - Mobile-responsive interface
- * 
+ *
  * Hardware: ESP32-WROOM-32 #1 (Main Controller)
  * Author: VitalCare Rural Team
  * Date: August 2025
@@ -27,8 +27,8 @@
 #include <ESPmDNS.h>
 
 // Network Configuration
-const char* AP_SSID = "VitalCare-Rural";
-const char* AP_PASSWORD = "VitalCare2025";
+const char *AP_SSID = "VitalCare-Rural";
+const char *AP_PASSWORD = "VitalCare2025";
 const IPAddress AP_IP(192, 168, 4, 1);
 const IPAddress AP_GATEWAY(192, 168, 4, 1);
 const IPAddress AP_SUBNET(255, 255, 255, 0);
@@ -38,7 +38,8 @@ WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 
 // Patient Data Structure
-struct Patient {
+struct Patient
+{
   String id;
   String name;
   int age;
@@ -49,7 +50,8 @@ struct Patient {
   unsigned long registrationTime;
 };
 
-struct VitalSigns {
+struct VitalSigns
+{
   float heartRate;
   float systolicBP;
   float diastolicBP;
@@ -70,7 +72,7 @@ const unsigned long VITAL_UPDATE_INTERVAL = 1000; // 1 second
 void setupWiFiAP();
 void setupWebServer();
 void setupWebSocket();
-void handleWebSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
+void handleWebSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
 void handleRoot();
 void handlePatientRegistration();
 void handleGetPatientData();
@@ -81,156 +83,175 @@ void simulateVitalSigns(); // For testing without actual sensors
 String generatePatientID();
 String formatTimestamp(unsigned long timestamp);
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   delay(1000);
-  
+
   Serial.println("=====================================");
   Serial.println("🏥 VitalCare Rural - Main Controller");
   Serial.println("=====================================");
-  
+
   // Initialize SPIFFS for web files
-  if (!SPIFFS.begin(true)) {
+  if (!SPIFFS.begin(true))
+  {
     Serial.println("❌ SPIFFS initialization failed");
     return;
   }
   Serial.println("✅ SPIFFS initialized");
-  
+
   // Setup WiFi Access Point
   setupWiFiAP();
-  
+
   // Setup Web Server
   setupWebServer();
-  
+
   // Setup WebSocket for real-time communication
   setupWebSocket();
-  
+
   // Initialize mDNS
-  if (MDNS.begin("vitalcare")) {
+  if (MDNS.begin("vitalcare"))
+  {
     Serial.println("✅ mDNS responder started: http://vitalcare.local");
   }
-  
+
   // Initialize current vitals with default values
   currentVitals = {0.0, 0.0, 0.0, 0.0, 0.0, millis(), "No Patient"};
-  
+
   Serial.println("\n🌐 VitalCare Rural System Ready!");
   Serial.println("📱 Connect to WiFi: " + String(AP_SSID));
   Serial.println("🌐 Open browser: http://192.168.4.1");
   Serial.println("=====================================\n");
 }
 
-void loop() {
+void loop()
+{
   // Handle web server requests
   server.handleClient();
-  
+
   // Handle WebSocket connections
   webSocket.loop();
-  
+
   // Update vital signs every second
-  if (millis() - lastVitalUpdate >= VITAL_UPDATE_INTERVAL) {
+  if (millis() - lastVitalUpdate >= VITAL_UPDATE_INTERVAL)
+  {
     // TODO: Receive actual sensor data from ESP32 #2
     // For now, simulate data for testing
     simulateVitalSigns();
     sendVitalSignsToClients();
     lastVitalUpdate = millis();
   }
-  
+
   // Small delay to prevent watchdog issues
   delay(10);
 }
 
-void setupWiFiAP() {
+void setupWiFiAP()
+{
   Serial.println("🔧 Setting up WiFi Access Point...");
-  
+
   // Configure Access Point
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(AP_IP, AP_GATEWAY, AP_SUBNET);
-  
+
   bool apStarted = WiFi.softAP(AP_SSID, AP_PASSWORD);
-  
-  if (apStarted) {
+
+  if (apStarted)
+  {
     Serial.println("✅ WiFi Access Point started");
     Serial.println("📡 SSID: " + String(AP_SSID));
     Serial.println("🔐 Password: " + String(AP_PASSWORD));
     Serial.println("🌐 IP Address: " + WiFi.softAPIP().toString());
     Serial.println("👥 Max Clients: " + String(WiFi.softAPgetStationNum()) + "/4");
-  } else {
+  }
+  else
+  {
     Serial.println("❌ Failed to start Access Point");
   }
 }
 
-void setupWebServer() {
+void setupWebServer()
+{
   Serial.println("🔧 Setting up Web Server...");
-  
+
   // Serve static files from SPIFFS
   server.serveStatic("/", SPIFFS, "/", "max-age=86400");
-  
+
   // API Endpoints
   server.on("/", HTTP_GET, handleRoot);
   server.on("/api/register-patient", HTTP_POST, handlePatientRegistration);
   server.on("/api/patient", HTTP_GET, handleGetPatientData);
   server.on("/api/vitals", HTTP_GET, handleGetVitalSigns);
-  
+
   // Handle 404 errors
   server.onNotFound(handleNotFound);
-  
+
   // Start server
   server.begin();
   Serial.println("✅ Web Server started on port 80");
 }
 
-void setupWebSocket() {
+void setupWebSocket()
+{
   Serial.println("🔧 Setting up WebSocket Server...");
-  
+
   webSocket.begin();
   webSocket.onEvent(handleWebSocketEvent);
-  
+
   Serial.println("✅ WebSocket Server started on port 81");
 }
 
-void handleWebSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-  switch(type) {
-    case WStype_DISCONNECTED:
-      Serial.printf("🔌 Client [%u] disconnected\n", num);
-      break;
-      
-    case WStype_CONNECTED: {
-      IPAddress ip = webSocket.remoteIP(num);
-      Serial.printf("🔌 Client [%u] connected from %d.%d.%d.%d\n", 
-                    num, ip[0], ip[1], ip[2], ip[3]);
-      
-      // Send current patient data to new client
-      DynamicJsonDocument doc(1024);
-      doc["type"] = "init";
-      doc["patientRegistered"] = patientRegistered;
-      if (patientRegistered) {
-        doc["patient"]["name"] = currentPatient.name;
-        doc["patient"]["age"] = currentPatient.age;
-        doc["patient"]["gender"] = currentPatient.gender;
-      }
-      
-      String message;
-      serializeJson(doc, message);
-      webSocket.sendTXT(num, message);
-      break;
+void handleWebSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
+{
+  switch (type)
+  {
+  case WStype_DISCONNECTED:
+    Serial.printf("🔌 Client [%u] disconnected\n", num);
+    break;
+
+  case WStype_CONNECTED:
+  {
+    IPAddress ip = webSocket.remoteIP(num);
+    Serial.printf("🔌 Client [%u] connected from %d.%d.%d.%d\n",
+                  num, ip[0], ip[1], ip[2], ip[3]);
+
+    // Send current patient data to new client
+    DynamicJsonDocument doc(1024);
+    doc["type"] = "init";
+    doc["patientRegistered"] = patientRegistered;
+    if (patientRegistered)
+    {
+      doc["patient"]["name"] = currentPatient.name;
+      doc["patient"]["age"] = currentPatient.age;
+      doc["patient"]["gender"] = currentPatient.gender;
     }
-    
-    case WStype_TEXT:
-      Serial.printf("📨 Received from [%u]: %s\n", num, payload);
-      break;
-      
-    default:
-      break;
+
+    String message;
+    serializeJson(doc, message);
+    webSocket.sendTXT(num, message);
+    break;
+  }
+
+  case WStype_TEXT:
+    Serial.printf("📨 Received from [%u]: %s\n", num, payload);
+    break;
+
+  default:
+    break;
   }
 }
 
-void handleRoot() {
+void handleRoot()
+{
   // Check if custom dashboard exists, otherwise serve default
-  if (SPIFFS.exists("/dashboard.html")) {
+  if (SPIFFS.exists("/dashboard.html"))
+  {
     File file = SPIFFS.open("/dashboard.html", "r");
     server.streamFile(file, "text/html");
     file.close();
-  } else {
+  }
+  else
+  {
     // Serve embedded dashboard
     String html = R"(<!DOCTYPE html>
 <html><head><title>VitalCare Rural</title><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -306,12 +327,15 @@ document.getElementById('patientForm').addEventListener('submit', function(e) {
   }
 }
 
-void handlePatientRegistration() {
-  if (server.hasArg("plain")) {
+void handlePatientRegistration()
+{
+  if (server.hasArg("plain"))
+  {
     DynamicJsonDocument doc(1024);
     DeserializationError error = deserializeJson(doc, server.arg("plain"));
-    
-    if (!error) {
+
+    if (!error)
+    {
       // Store patient data
       currentPatient.id = generatePatientID();
       currentPatient.name = doc["name"].as<String>();
@@ -321,35 +345,41 @@ void handlePatientRegistration() {
       currentPatient.emergencyContact = doc["emergencyContact"].as<String>();
       currentPatient.medicalConditions = doc["medicalConditions"].as<String>();
       currentPatient.registrationTime = millis();
-      
+
       patientRegistered = true;
-      
+
       Serial.println("✅ Patient registered:");
       Serial.println("👤 Name: " + currentPatient.name);
       Serial.println("🎂 Age: " + String(currentPatient.age));
       Serial.println("⚧ Gender: " + currentPatient.gender);
-      
+
       // Send success response
       DynamicJsonDocument response(256);
       response["success"] = true;
       response["patientId"] = currentPatient.id;
       response["message"] = "Patient registered successfully";
-      
+
       String responseString;
       serializeJson(response, responseString);
       server.send(200, "application/json", responseString);
-    } else {
+    }
+    else
+    {
       server.send(400, "application/json", "{\"success\":false,\"message\":\"Invalid JSON\"}");
     }
-  } else {
+  }
+  else
+  {
     server.send(400, "application/json", "{\"success\":false,\"message\":\"No data received\"}");
   }
 }
 
-void handleGetPatientData() {
+void handleGetPatientData()
+{
   DynamicJsonDocument doc(1024);
-  
-  if (patientRegistered) {
+
+  if (patientRegistered)
+  {
     doc["registered"] = true;
     doc["patient"]["id"] = currentPatient.id;
     doc["patient"]["name"] = currentPatient.name;
@@ -359,19 +389,22 @@ void handleGetPatientData() {
     doc["patient"]["emergencyContact"] = currentPatient.emergencyContact;
     doc["patient"]["medicalConditions"] = currentPatient.medicalConditions;
     doc["patient"]["registrationTime"] = formatTimestamp(currentPatient.registrationTime);
-  } else {
+  }
+  else
+  {
     doc["registered"] = false;
     doc["message"] = "No patient registered";
   }
-  
+
   String response;
   serializeJson(doc, response);
   server.send(200, "application/json", response);
 }
 
-void handleGetVitalSigns() {
+void handleGetVitalSigns()
+{
   DynamicJsonDocument doc(512);
-  
+
   doc["heartRate"] = currentVitals.heartRate;
   doc["systolicBP"] = currentVitals.systolicBP;
   doc["diastolicBP"] = currentVitals.diastolicBP;
@@ -379,17 +412,19 @@ void handleGetVitalSigns() {
   doc["temperature"] = currentVitals.temperature;
   doc["timestamp"] = formatTimestamp(currentVitals.timestamp);
   doc["status"] = currentVitals.status;
-  
+
   String response;
   serializeJson(doc, response);
   server.send(200, "application/json", response);
 }
 
-void handleNotFound() {
+void handleNotFound()
+{
   server.send(404, "text/plain", "404: Page not found");
 }
 
-void sendVitalSignsToClients() {
+void sendVitalSignsToClients()
+{
   DynamicJsonDocument doc(512);
   doc["type"] = "vitals";
   doc["heartRate"] = currentVitals.heartRate;
@@ -399,15 +434,17 @@ void sendVitalSignsToClients() {
   doc["temperature"] = currentVitals.temperature;
   doc["timestamp"] = currentVitals.timestamp;
   doc["status"] = currentVitals.status;
-  
+
   String message;
   serializeJson(doc, message);
   webSocket.broadcastTXT(message);
 }
 
 // Simulate vital signs for testing (replace with actual sensor data)
-void simulateVitalSigns() {
-  if (patientRegistered) {
+void simulateVitalSigns()
+{
+  if (patientRegistered)
+  {
     // Simulate realistic vital signs with small variations
     currentVitals.heartRate = 72 + random(-5, 6);
     currentVitals.systolicBP = 120 + random(-10, 11);
@@ -416,28 +453,33 @@ void simulateVitalSigns() {
     currentVitals.temperature = 98.6 + random(-10, 11) / 10.0;
     currentVitals.timestamp = millis();
     currentVitals.status = "Monitoring";
-    
+
     // Simple status determination
     if (currentVitals.heartRate < 60 || currentVitals.heartRate > 100 ||
         currentVitals.systolicBP < 90 || currentVitals.systolicBP > 140 ||
-        currentVitals.spO2 < 95 || currentVitals.temperature < 97 || currentVitals.temperature > 100) {
+        currentVitals.spO2 < 95 || currentVitals.temperature < 97 || currentVitals.temperature > 100)
+    {
       currentVitals.status = "Alert";
     }
-  } else {
+  }
+  else
+  {
     currentVitals.status = "No Patient";
   }
 }
 
-String generatePatientID() {
+String generatePatientID()
+{
   return "VCR" + String(millis()) + String(random(100, 999));
 }
 
-String formatTimestamp(unsigned long timestamp) {
+String formatTimestamp(unsigned long timestamp)
+{
   unsigned long seconds = timestamp / 1000;
   unsigned long minutes = seconds / 60;
   unsigned long hours = minutes / 60;
-  
-  return String(hours % 24) + ":" + 
+
+  return String(hours % 24) + ":" +
          (minutes % 60 < 10 ? "0" : "") + String(minutes % 60) + ":" +
          (seconds % 60 < 10 ? "0" : "") + String(seconds % 60);
 }
