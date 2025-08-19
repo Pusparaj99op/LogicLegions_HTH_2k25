@@ -98,7 +98,7 @@
 ┌─────────────────────────────────────────┐
 │  🏥 VitalCare Rural - Patient Monitor   │
 ├─────────────────────────────────────────┤
-│  👤 Patient: John Doe     Age: 45  M    │
+│  👤 Patient: Tuka Ram     Age: 45  M    │
 │  📅 Session: Aug 19, 2025  ⏰ 14:30    │
 ├─────────────────────────────────────────┤
 │  ❤️  Heart Rate: 72 BPM     🟢 Normal   │
@@ -148,9 +148,9 @@ cd LogicLegions_HTH_2k25
 code VitalCare-Rural.code-workspace # Mene yaha Ek Worspace banaya hai For Easy Setup
 
 # Flash ESP32 modules
-pio run --target upload --environment esp32-main
-pio run --target upload --environment esp32-sensors
-pio run --target upload --environment esp32-comm
+# pio run --target upload --environment esp32-main
+# pio run --target upload --environment esp32-sensors
+# pio run --target upload --environment esp32-comm
 ```
 
 ### 🌐 **Network Setup**
@@ -171,23 +171,23 @@ VitalCare-Rural/
 │   ├── 📡 esp32-communication/  # Data sync & storage
 │   └── 🛠️ libraries/           # Custom libraries
 ├── 🌐 web-interface/
-│   ├── 📄 index.html           # Main dashboard
-│   ├── 🎨 styles.css           # UI styling
-│   ├── ⚡ script.js            # Real-time updates
-│   └── 📱 mobile.css           # Mobile optimization
+│   ├── 📄 index.html           # Main dashboard      # Soham Ka Kam
+│   ├── 🎨 styles.css           # UI styling          # Soham Ka Kam
+│   ├── ⚡ script.js            # Real-time updates   # Soham Ka Kam
+│   └── 📱 mobile.css           # Mobile optimization # Soham Ka Kam
 ├── 📊 data-schemas/
-│   ├── 👤 patient.json         # Patient data structure
-│   ├── 📈 vitals.json          # Vital signs format
-│   └── 🗂️ session.json        # Session management
+│   ├── 👤 patient.json         # Patient data structure  # Abhijit Ka Kam
+│   ├── 📈 vitals.json          # Vital signs format      # Abhijit Ka Kam
+│   └── 🗂️ session.json        # Session management       # Abhijit Ka Kam
 ├── 📚 documentation/
-│   ├── 🔧 hardware-guide.md    # Assembly instructions
-│   ├── 💻 software-guide.md    # Programming guide
-│   ├── 🏥 user-manual.md       # Clinical usage
-│   └── 🔍 troubleshooting.md   # Common issues
+│   ├── 🔧 hardware-guide.md    # Assembly instructions  # Pranay Ka Kam
+│   ├── 💻 software-guide.md    # Programming guide      # Pranay Ka Kam
+│   ├── 🏥 user-manual.md       # Clinical usage         # Pranay Ka Kam
+│   └── 🔍 troubleshooting.md   # Common issues          # Pranay Ka Kam
 └── 🧪 testing/
-    ├── ⚡ unit-tests/          # Component testing
-    ├── 🔗 integration-tests/   # System testing
-    └── 🏥 field-tests/         # Real-world validation
+    ├── ⚡ unit-tests/          # Component testing     #vineet Ka Kam
+    ├── 🔗 integration-tests/   # System testing        #vineet Ka Kam
+    └── 🏥 field-tests/         # Real-world validation #vineet Ka Kam
 ```
 
 ---
