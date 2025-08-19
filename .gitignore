@@ -1,0 +1,6 @@
+ #ignore case for these . folders
+ *.vscode
+ *.VitalCare-Rural
+ *.gitattributes\
+ *.gitignore
+ *examples
